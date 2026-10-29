@@ -1,0 +1,46 @@
+{
+  "上海银行": {
+    "sha256": "ee03fef968462982fd65e5f5f39aa77fe9cc7731bfb51f9b97e3feafdc271d3e",
+    "bytes": 3791001
+  },
+  "中信银行": {
+    "sha256": "423e1aef7b8d3368c5347ee35b65eb57ec6f46c63bb6b6f278bb5a2167042d5a",
+    "bytes": 5355582
+  },
+  "北京银行": {
+    "sha256": "453743133f673b70c0e25cd236fd8e6e73b0251e25be6bfe11d2272a65e78c80",
+    "bytes": 19994294
+  },
+  "宁波银行": {
+    "sha256": "4534164c8bbb0f99ab16582589dc43b9d46bfd3e2337ab9690401c8b5c4ea2c8",
+    "bytes": 6518344
+  },
+  "平安银行": {
+    "sha256": "77d98b2636f31c0a546728637d99da85d00c4d1783e1372b090a753ad46e14f1",
+    "bytes": 1945169
+  },
+  "成都银行": {
+    "sha256": "62b946fa1dd9315f30327b5cf0c9673ddf6f288d84dd6ba2b6646defde0e3f54",
+    "bytes": 2103700
+  },
+  "杭州银行": {
+    "sha256": "ef46589749127bf13dac641770bd5801557f40ddc05dbe2e321ca228f856172d",
+    "bytes": 5673396
+  },
+  "江苏银行": {
+    "sha256": "a5136fb013db4b301aac6a5c423570afb7ca45ca7ee9384f7dc160d00dc887df",
+    "bytes": 2426690
+  },
+  "浦发银行": {
+    "sha256": "29bfa3e8fc0a55e1df8da991a6edbe3f460ba5d8f5f00e2e81fc9078cd22d94e",
+    "bytes": 39565794
+  },
+  "苏州银行": {
+    "sha256": "48c1836b8a049abf4f2d70417db7bd646df9325c2b6f73713ee7ec71faf9011b",
+    "bytes": 6662734
+  },
+  "青岛银行": {
+    "sha256": "ce9a163768fc89d5008da6ec49593f3b2e2142a0999ee5fe2c849d9a8c09576d",
+    "bytes": 6541164
+  }
+}
