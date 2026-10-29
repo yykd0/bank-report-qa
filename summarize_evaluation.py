@@ -3,23 +3,26 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parent
 data=json.loads((ROOT/'outputs/evaluation.json').read_text(encoding='utf-8'))
-notes=[
- '部分完成：第2、5块有年份、单位和营业收入；页面只展示摘录，未生成完整回答。',
- '部分完成：第3块合并利润表有年份、单位和数值；第1块是分部合计，需看口径。',
- '部分完成：第1、4块给出正确收入和单位；第5块表格错位，不能直接读取。',
- '部分完成：第1块正文和第2块表格均包含正确比例；页面未输出总结句。',
- '部分完成：第1块报告期末正文有正确比例；其余块可能是地区或分类口径。',
- '部分完成：第1块正文和第6块表格有年份、单位及正确值。',
- '部分完成：第4、5块有正确值；第1块缺少明确年份，须回看报告页。',
- '部分完成：第3块表格可核对年份和比例；第1块图表文字顺序混乱。',
- '未答对：两家相关数字有召回，但页面没有自动比较并给出谁更低；第1块还来自无关公司。',
- '未答对：前6块只有宁波相关参考数，未召回浦发对应值；页面也未完成比较。'
-]
-out=['# 十题逐题评测','', '评测设置：单公司题在页面选择对应公司；跨公司题选择“全部”；每题返回 6 块。默认无模型，仅展示摘录。参考数值按原报告页面核对；字面命中不等于答案正确。', '', '严格以“页面直接给出完整答案”衡量：10 题均未直接作答；其中前 8 题的摘录足以人工核对，两道跨公司题未完成比较。', '']
-for item,note in zip(data,notes):
-    out += [f"## {item['id']}. {item['q']}",f"参考：{item['reference']}",f'结论：{note}','召回块（排序从高到低）：']
-    for c in item['retrieved']:
-        out.append(f"- {c['id']}｜{c['kind']}｜{c['period']}｜PDF第{c['page']}页｜{c['section']}")
-    out.append('')
-out += ['所有块的完整文本、检索分数和链接见 `evaluation.json`。本记录是对默认摘录模式的人工核对，并非外部模型评测。']
+out=['# 财报问答逐题评测','',
+     '2026-10-29。原10题与上一版相同；另外增加两道11家公司全景题，以及同义问法、跨年列、跨单位、未收录公司与不支持口径等独立检查。',
+     '判断方法：将实际生成的答案、提取的值、单位、比较结果及引用，与预先核对的报告数值逐项比对；拒答题要求不输出事实。以下是程序化检查，不代表对所有问题或所有表格的准确率。',
+     '上一版严格按页面给出完整答案为 0/10；新版结果如下。']
+for group in ('原10题','全景题','补充题','拒答题'):
+    items=[x for x in data if x['group']==group]
+    out += ['',f'## {group}：{sum(x["correct"] for x in items)}/{len(items)}','']
+    for x in items:
+        r=x['result']
+        verdict='通过' if x['correct'] else '未完成（部分结果可核对，已拒绝完整比较）' if x.get('safe_partial') else '未通过'
+        out += [f'### {x["id"]}. {x["question"]}',f'结果：{verdict}；参考：{x["reference"]}', '',r['answer'],'']
+        if r.get('facts'):
+            out.append('用于回答的表格行：')
+            for f in r['facts']:
+                out.append(f'- {f["id"]}｜{f["period"]}｜PDF第{f["page"]}页｜{f["text"].replace(chr(10), "；")}')
+        if r.get('recall'):
+            out.append('分公司混合检索召回块：')
+            for name,chunks in r['recall'].items():
+                out.append(f'- {name}：'+ '、'.join(f'{c["id"]}（{c["kind"]}）' for c in chunks))
+        out.append('')
+out += ['完整结果（含每个召回块原文、分数及链接）见 `evaluation.json`；上一版记录保留为 `evaluation-baseline.md` / `evaluation-baseline.json`。',
+        '局限：表格仍可能因为跨页、合并单元格、双栏或扫描件失败；仅在找到可信的同页多年份表头、指标行、数值对齐及单位时回答。样本中江苏银行只有半年报，不用于全年比较。']
 (ROOT/'outputs/evaluation.md').write_text('\n'.join(out)+'\n',encoding='utf-8')

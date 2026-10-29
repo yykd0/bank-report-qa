@@ -5,24 +5,23 @@ root=Path(__file__).resolve().parent
 doc=fitz.open(); page=doc.new_page(width=595,height=842)
 font='C:/Windows/Fonts/msyh.ttc'
 page.insert_font(fontname='cjkfont',fontfile=font)
-page.insert_text((45,58),'银行财报问答：一页实验结论',fontname='cjkfont',fontsize=19,color=(0.1,0.18,0.29))
+page.insert_text((45,58),'银行财报问答：改进与评测结论',fontname='cjkfont',fontsize=19,color=(0.1,0.18,0.29))
 page.draw_line((45,73),(550,73),color=(0.2,0.42,0.65),width=1)
-text='''实验范围与方法
-使用巨潮资讯 11 家上市银行的财报全文：8 份 2024 年年报、2 份 2025 年年报、1 份 2025 年半年报，共解析 3,472 个 PDF 页面，形成 6,442 个正文或表格块（其中表格块 1,613 个）。按 PDF 物理页标注公司、报告、章节；BM25 与 TF-IDF／SVD（LSA）向量排序用 RRF 融合。默认页面展示原文摘录，未接入模型生成。
+text='''样本与方法
+选取巨潮资讯 11 家上市银行的财报全文，共 3,472 个 PDF 页面。按页切分正文和检测到的表格，以 BM25 与 LSA 向量进行混合检索。样本含 8 份 2024 年报、2 份 2025 年报和 1 份 2025 年半年报；比较时必须区分期间和口径。
 
-真实评测：10 题，包含 2 题跨公司比较
-八道单公司指标题均召回可人工核对的正确证据，但页面没有生成完整答案，故只能记为部分完成。严格按“页面直接给出完整答案”计，0/10；不能将数字命中当成答对。跨公司第 9 题召回两家数值，却未计算谁更低；第 10 题漏召回浦发银行所需数值，也未给出比较结论。每题的前 6 块、参考值和判断见 evaluation.md / evaluation.json。
+本次改进
+页面基于 PDF 坐标对齐多年份表头、指标行和数值，核对单位后直接输出答案及可点击的原报告页码。跨公司问题逐家公司召回，并把不同金额单位换算后比较；任一所需公司证据不足时，不给出完整排名。实现使用可检查的规则，并未调用大模型。
 
-主要失误与原因
-跨公司查询存在证据不均衡，前 6 块被同一公司占满；检索排序不会自行汇总或执行比较。PDF 的双栏、图表及跨列文本可能乱序；自动表格识别有错位、缺表头和跨页问题。章节为规则推断，并非人工逐页校验。不同报告的时间跨度和单位也不同，不能不加核对地横比。
+实际评测
+沿用原 10 道题：上一版直接完整回答 0/10；新版对预先核对的答案、单位、比较结论及引用的检查为 10/10。新增两道覆盖全部 11 家银行的全景题均未完整回答：不良率覆盖 7 家，营收排名覆盖 10 家，缺失项均明确标出且未给出完整排名。另有 8 道补充题和 8 道拒答检查均通过。逐题结果与召回块见 evaluation.md；小样本不代表任意问题的准确率。
 
-结论与下一步
-需要追溯财报原文、查单项指标和核对出处时，知识库合适：可以返回报告及页码，并随新报告更新。跨公司全景或排名需要先分公司召回、统一期间和单位、结构化表格，再计算并引用证据。微调更适合学习董秘口吻，不适合作为不断更新的财报事实唯一来源；本实验没有进行 LoRA 对照，因此不声称验证了微调效果。
+典型案例与局限
+比较 2024 年不良贷款率时，成都银行 0.66%，中信银行 1.16%，页面给出成都较低并分别引用对应报告页。江苏银行只有 2025 年半年报，不能当作 2025 全年营业收入，因此拒答。跨页、合并单元格、扫描件和复杂多栏表格仍可能漏检或错位；规则仅搜索前 60 页财务摘要，且目前不支持多指标、跨年变化及细分贷款口径。引用数字前仍应回看原 PDF。
 
-当前交付状态
-检索页面与十题证据记录已运行；生成式回答接口未经实际模型测试，复杂表格未全面还原。以上限制应保留在提交说明中。'''
-rect=fitz.Rect(45,90,550,790)
-remaining=page.insert_textbox(rect,text,fontname='cjkfont',fontsize=10.5,lineheight=1.35,color=(0.13,0.16,0.2))
-if remaining<0: raise RuntimeError(f'Content does not fit on one page: {remaining}')
+结论
+追溯财报事实、定位数字出处及更新资料，适合建库；跨公司题还需要分公司召回、对齐年份及单位，再计算。微调更适合学习稳定的表达口径，不应作为持续变化的财报事实唯一来源。本实验未训练模型，不能据此声称微调效果。'''
+remaining=page.insert_textbox(fitz.Rect(45,90,550,790),text,fontname='cjkfont',fontsize=10.5,lineheight=1.35,color=(0.13,0.16,0.2))
+if remaining<0: raise RuntimeError(f'Content does not fit: {remaining}')
 doc.subset_fonts(); doc.save(root/'outputs'/'一页结论.pdf',garbage=4,deflate=True)
-print('created one page, spare height',remaining)
+print('created one-page PDF; spare height',remaining)
